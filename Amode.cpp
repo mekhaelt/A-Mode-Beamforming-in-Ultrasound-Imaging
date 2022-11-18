@@ -27,6 +27,13 @@ int loadRFData(float **RFData, const char *fileName, int numElement, int numSamp
     char line[100];
     float numbers[numSample];
 
+
+
+    if (fileName.fail())
+	{
+        return -1;
+	}
+
     for(int x=0; x<numElement; x++)
     {
         for(int i=0; i<numSample; i++)
@@ -39,10 +46,6 @@ int loadRFData(float **RFData, const char *fileName, int numElement, int numSamp
     
     }
 
-    return -1;
-
-
-
     // Open the text file fileName, read the data and store into RFData
     // You can use the getline() command to extract the data lines from the txt files
 }
@@ -50,12 +53,35 @@ int loadRFData(float **RFData, const char *fileName, int numElement, int numSamp
 // Create an array containing the depth location (in z-direction) for each pixel on the scanline
 float *genScanlineLocation(int &numPixel)
 {
+    int depth;
+
+    cout << "What is the desired imaging depth?";
+    cin >> depth;
+    
+    cout << "How many pixels is the scanline?"
+    cin >> numPixel;
+
+    float scanlineLocation[numPixel];
+
+    float increment = (numPixel-1)/depth;
+    float newDepth=0;
+    
+    for(int i=0; i<numPixel; i++)
+
+    {
+        scanlineLocation[i]=newDepth;
+        newDepth+=increment;
+    }
+
+
+    return scanlineLocation;
 
 }
 
 // Create an array containing the element location (in x-direction) of the ultrasound transducer
 float *genElementLocation(int numElement, float PITCH)
 {
+    float eleLocation[128];
    
 }
 
