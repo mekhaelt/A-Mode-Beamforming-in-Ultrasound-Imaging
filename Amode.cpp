@@ -9,11 +9,40 @@ using namespace std;
 
 float **createDataMatrix(int numElement, int numSample)
 {
+    float **RFData;
+    RFData = new float* [numElement];
+
+    for (int i=0; i<numElement; i++)
+    {
+        RFData[i] = new float[numSample];
+    } 
+
+    return RFData;
     // Create a 2D data matrix of size numElement and numSample nnknknkn
 }
 
 int loadRFData(float **RFData, const char *fileName, int numElement, int numSample)
 {
+    ifstream infile(fileName);
+    char line[100];
+    float numbers[numSample];
+
+    for(int x=0; x<numElement; x++)
+    {
+        for(int i=0; i<numSample; i++)
+        {
+            infile.getline(line, 100);
+            numbers[i]=atof(line);
+        }
+
+        RFData[x]=numbers;
+    
+    }
+
+    return -1;
+
+
+
     // Open the text file fileName, read the data and store into RFData
     // You can use the getline() command to extract the data lines from the txt files
 }
