@@ -26,13 +26,20 @@ float **createDataMatrix(int numElement, int numSample)
 
 int loadRFData(float **RFData, const char *fileName, int numElement, int numSample)
 {
-    ifstream infile; //
+
+    // Open the text file fileName, read the data and store into RFData
+    // You can use the getline() command to extract the data lines from the txt files
+
+    //open file
+    ifstream infile; 
     infile.open(fileName);
-    char line[100];
-    float numbers[numSample];
 
 
+    char line[100]; //char array to store input
+    float numbers[numSample]; //float array to store input once they have been converted to float
 
+
+    //returns -1, if function fails to open the designated file
     if (infile.fail())
 	{
         return -1;
@@ -42,43 +49,40 @@ int loadRFData(float **RFData, const char *fileName, int numElement, int numSamp
     {
         for(int i=0; i<numSample; i++)
         {
-            infile.getline(line, 100);
-            numbers[i]=atof(line);
+            infile.getline(line, 100); //recieves input from the file and stores it within char array
+            numbers[i]=atof(line); //converts char array to a float and stores the value within numbers
         }
 
-        RFData[x]=numbers;
+        RFData[x]=numbers; //assigns numbers to RFData[x]
     
     }
 
-    infile.close();
+    infile.close(); //closes file
     return 0;
 
-    // Open the text file fileName, read the data and store into RFData
-    // You can use the getline() command to extract the data lines from the txt files
 }
 
 // Create an array containing the depth location (in z-direction) for each pixel on the scanline
 float *genScanlineLocation(int &numPixel)
 {
-    int depth;
-//int pixels;
+    int depth; //initialize variable
 
     cout << "What is the desired imaging depth?";
-    cin >> depth;
+    cin >> depth; //receives input for depth
     
     cout << "How many pixels is the scanline?";
-    cin >> numPixel;
+    cin >> numPixel; //receives input for pixels
 
-    float scanlineLocation[numPixel];
+    float scanlineLocation[numPixel]; //creates array
 
-    float increment = (numPixel-1)/depth;
-    float newDepth=0;
+    float increment = (numPixel-1)/depth; //calculates how much each value should increment by
+    float newDepth=0; //initalizes and declares newDepth
     
     for(int i=0; i<numPixel; i++)
 
     {
-        scanlineLocation[i]=newDepth;
-        newDepth+=increment;
+        scanlineLocation[i]=newDepth; //assigns value of newDepth to scanlineLocation
+        newDepth+=increment; //modifies value of newDepth
     }
 
 
@@ -89,56 +93,58 @@ float *genScanlineLocation(int &numPixel)
 // Create an array containing the element location (in x-direction) of the ultrasound transducer
 float *genElementLocation(int numElement, float PITCH)
 {
-    float eleLocation[numElement];
+    float eleLocation[numElement]; //creates float array
 
     for (int n=0; n<numElement; n++)
     {
-        eleLocation[n] = (n-(numElement-1)/2)*PITCH;
-        cout << eleLocation[n];
+        eleLocation[n] = (n-(numElement-1)/2)*PITCH; //calculation for eleLocation
+        cout << eleLocation[n]; //outputs eleLocation[n]
     }
 }
 
 // Allocate memory to store the beamformed scanline
 float *createScanline(int numPixel)
 {
-    float *scanline;
-    scanline = new float[numPixel]
+    float *scanline;    //creates pointer variable for scanline
+    scanline = new float[numPixel]; //allocates an array of floats
     return scanline;
 }
 
 // Beamform the A-mode scanline
 void beamform(float *scanline, float **realRFData, float **imagRFData, float *scanlinePosition, float *elementPosition, int numElement, int numSample, int numPixel, float FS, float SoS)
 {
-
-    float tForward[numPixel];
+    //creates float arrays
+    float tForward[numPixel]; 
     float tBackward[numPixel, numElement];
     float tTotal[numPixel, numElement];
 
-    int **s;
-    s = new int*[numPixel];
+    int **s; //creates douple pointer int
+    s = new int*[numPixel]; //Allocate an array of pointer int variables
 
-    float *pReal;
-    pReal = new float [numPixel];
-    float *pImag;
-    pImag = new float [numPixel];
+    float *pReal;   //initializes pointer float
+    pReal = new float [numPixel]; //Allocates an array of pointer float variables
+    float *pImag; //initializes pointer float
+    pImag = new float [numPixel]; // Allocates an array of pointer float variables
 
 
     for (int i = 0; i<numPixel; i++)
     {   
-        pReal[i] = 0;
+        //declares value of 0
+        pReal[i] = 0; 
         pImag[i] = 0;
 
-        tForward[i] = scanlinePosition[i]/SoS;
+        tForward[i] = scanlinePosition[i]/SoS;  //calculations for tForward
         
         for (int k = 0; k<numElement; k++)
         {
-            tBackward[i][k] = (sqrt(pow(scanlinePosition[i], 2) + pow(elementPosition[k], 2)))/SoS;
-            tTotal[i][k] = tForward[i] + tBackward[i][k];
-            s[i][k]=floor(time[i][k]*FS);
-            pReal[i] += realRFData[k][s[i][k]];
-            pImag[i] += imagRFData[k][s[i][k]];
+
+            tBackward[i][k] = (sqrt(pow(scanlinePosition[i], 2) + pow(elementPosition[k], 2)))/SoS; //calculations for tBackward
+            tTotal[i][k] = tForward[i] + tBackward[i][k]; //calculations for tTotal
+            s[i][k]=floor(time[i][k]*FS);  //calculations for s
+            pReal[i] += realRFData[k][s[i][k]]; //calculations for pReal
+            pImag[i] += imagRFData[k][s[i][k]]; //calculations for pImag
         }
-        scanline[i] = sqrt(pow(pReal[i], 2) + pow(pImag[i], 2));
+        scanline[i] = sqrt(pow(pReal[i], 2) + pow(pImag[i], 2)); //calculates echo magnitude
     }
 
 
@@ -148,15 +154,18 @@ void beamform(float *scanline, float **realRFData, float **imagRFData, float *sc
 
 // Write the scanline to a csv file
 int outputScanline(const char *fileName, float *scanlinePosition, float *scanline, int numPixel)
-{
+{       
+    //open outfile
     ofstream outfile;
     outfile.open(fileName);
-
-    if (outfile.fail())
+    
+    //returns -1, if function fails to open the designated file
+    if (outfile.fail()) 
     {
         return -1;
     }
 
+    //outputs scanlinePosition & scanline
     for(int i = 0; i<numPixel; i++)
     {
         outfile << scanlinePosition[i];
@@ -165,7 +174,7 @@ int outputScanline(const char *fileName, float *scanlinePosition, float *scanlin
         outfile << endl;
     }
 
-    outfile.close();
+    outfile.close(); //closes file
 
     return 0;
 }
@@ -173,10 +182,12 @@ int outputScanline(const char *fileName, float *scanlinePosition, float *scanlin
 // Destroy all the allocated memory
 void destroyAllArrays(float *scanline, float **realRFData, float **imagRFData, float *scanlinePosition, float *elementPosition, int numElement, int numSample, int numPixel)
 {
+    //deletes memory for 1-dimension arrays
     delete scanline;
     delete scanlinePosition;
     delete elementPosition;
 
+    //deletes memory for 2-dimensional arrays
     for( int i=o; i<numElement; i++)
     {
         delete realRFData[i];
