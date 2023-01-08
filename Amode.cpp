@@ -96,7 +96,7 @@ float *genElementLocation(int numElement, float PITCH)
 
     for (int n=0; n<numElement; n++)
     {
-        eleLocation[n] = (n-((numElement-1)/2))*PITCH; //calculation for eleLocation
+        eleLocation[n] = (n-((numElement-1.0)/2.0))*PITCH; //calculation for eleLocation
     }
 
     return eleLocation;
