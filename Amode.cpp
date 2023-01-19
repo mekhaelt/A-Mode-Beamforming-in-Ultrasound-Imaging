@@ -20,7 +20,7 @@ float **createDataMatrix(int numElement, int numSample)
     } 
 
 
-    return RFData; //return array
+    return RFData; 
     
 }
 
@@ -28,9 +28,7 @@ int loadRFData(float **RFData, const char *fileName, int numElement, int numSamp
 {
 
     // Open the text file fileName, read the data and store into RFData
-    // You can use the getline() command to extract the data lines from the txt files
 
-    //open file
     ifstream infile; 
     infile.open(fileName);
 
@@ -55,7 +53,7 @@ int loadRFData(float **RFData, const char *fileName, int numElement, int numSamp
     
     }
 
-    infile.close(); //closes file
+    infile.close(); 
     return 0;
 
 }
@@ -63,18 +61,18 @@ int loadRFData(float **RFData, const char *fileName, int numElement, int numSamp
 // Create an array containing the depth location (in z-direction) for each pixel on the scanline
 float *genScanlineLocation(int &numPixel)
 {
-    float depth; //initialize variable
+    float depth; 
 
     cout << "What is the desired imaging depth?";
-    cin >> depth; //receives input for depth
+    cin >> depth; 
     
     cout << "How many pixels is the scanline?";
-    cin >> numPixel; //receives input for pixels
+    cin >> numPixel; 
 
     float *scanlineLocation; //defines pointer float
     scanlineLocation = new float[numPixel]; //creates float array
 
-    float newDepth=0; //initalizes and declares newDepth
+    float newDepth=0; 
     
     for(int i=0; i<numPixel; i++)
 
@@ -113,7 +111,6 @@ float *createScanline(int numPixel)
 // Beamform the A-mode scanline
 void beamform(float *scanline, float **realRFData, float **imagRFData, float *scanlinePosition, float *elementPosition, int numElement, int numSample, int numPixel, float FS, float SoS)
 {
-    //create arrays
     float tForward[numPixel]; 
     float tBackward[numPixel][numElement];
     float tTotal[numPixel][numElement];
@@ -125,22 +122,23 @@ void beamform(float *scanline, float **realRFData, float **imagRFData, float *sc
 
     for (int i = 0; i<numPixel; i++)
     {   
-        //declares values of 0
         pReal[i] = 0; 
         pImag[i] = 0;
 
-        tForward[i] = scanlinePosition[i]/SoS;  //calculations for tForward
+        tForward[i] = scanlinePosition[i]/SoS;  //calculations for forward time of flight
         
         for (int k = 0; k<numElement; k++)
         {
 
-            tBackward[i][k] = (sqrt(pow(scanlinePosition[i], 2) + pow(elementPosition[k], 2)))/SoS; //calculations for tBackward
-            tTotal[i][k] = tForward[i] + tBackward[i][k]; //calculations for tTotal
-            s[i][k]=floor(tTotal[i][k]*FS);  //calculations for s
-            pReal[i] += realRFData[k][s[i][k]]; //calculations for pReal
-            pImag[i] += imagRFData[k][s[i][k]]; //calculations for pImag
+            tBackward[i][k] = (sqrt(pow(scanlinePosition[i], 2) + pow(elementPosition[k], 2)))/SoS; //calculations for backwards time of flight
+            tTotal[i][k] = tForward[i] + tBackward[i][k]; //calculations for total time of flight
+            s[i][k]=floor(tTotal[i][k]*FS);  //finding which sample from tranducer element k matches with the scanline location at i
+
+            //extracting data to generate the real and imaginary part of the pulse
+            pReal[i] += realRFData[k][s[i][k]]; 
+            pImag[i] += imagRFData[k][s[i][k]]; 
         }
-        scanline[i] = sqrt(pow(pReal[i], 2) + pow(pImag[i], 2)); //calculations for echo magnitude
+        scanline[i] = sqrt(pow(pReal[i], 2) + pow(pImag[i], 2)); //generating the corresponding echo magnitude at scanline position i
     }
 
 
